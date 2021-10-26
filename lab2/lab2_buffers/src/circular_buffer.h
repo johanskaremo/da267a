@@ -14,10 +14,12 @@ struct circularBuffer{
 };
 
 void initCircularBuffer(struct circularBuffer* bufferPtr, int* data, int maxLen);
-int contains(struct circularBuffer* bufferPtr, int value);
+
 int addElement(struct circularBuffer* bufferPtr, int value);
-int removeValue(struct circularBuffer* bufferPtr, int value);
+
 int removeHead(struct circularBuffer* bufferPtr);
+int removeValue(struct circularBuffer* bufferPtr, int value);
+int contains(struct circularBuffer* bufferPtr, int value);
 void printBuffer(struct circularBuffer* bufferPtr);
 #endif
 
