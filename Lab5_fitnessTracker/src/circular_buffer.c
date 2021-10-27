@@ -3,6 +3,8 @@
 #include <limits.h>
 #include "circular_buffer.h"
 
+uint32_t minValue = 0;
+
 /*
  * Initialize an empty buffer.
  */
@@ -11,7 +13,7 @@ void initCircularBuffer(struct circularBuffer *bufferPtr, uint32_t *data, int ma
   bufferPtr->data = data;
   for (int i = 0; i < bufferPtr->maxLength; i++)
   {
-    bufferPtr->data[i] = INT_MIN;
+    bufferPtr->data[i] = minValue;
   }
   bufferPtr->head = 0;
   bufferPtr->tail = 0;
@@ -68,19 +70,19 @@ uint32_t removeHead(struct circularBuffer *bufferPtr)
   if (bufferPtr->filledElements == 0) //buffern är tom
   {
     printf("Couldnt remove head, buffer is empty\n");
-    return (uint32_t)INT_MIN;
+    return (uint32_t)minValue;
   }
   else if (bufferPtr->filledElements == 1) //finns endast 1 element står head och tail på samma
   {
     value = bufferPtr->data[bufferPtr->head];
-    bufferPtr->data[bufferPtr->head] = INT_MIN;
+    bufferPtr->data[bufferPtr->head] = minValue;
     bufferPtr->filledElements = bufferPtr->filledElements - 1;
     return (uint32_t)value;
   }
   else //finns fler element, skall head flyttas till näst äldsta
   {    //element
     value = bufferPtr->data[bufferPtr->head];
-    bufferPtr->data[bufferPtr->head] = INT_MIN;
+    bufferPtr->data[bufferPtr->head] = minValue;
 
     if (bufferPtr->head == bufferPtr->maxLength - 1)
     {

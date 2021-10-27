@@ -4,6 +4,8 @@
 #include <esp_pm.h>
 #include "math.h"
 #include "circular_buffer.h"
+#include <stdlib.h>
+#include <limits.h>
 
 #define sdaPin 33                 // kan behövas ändra på min
 #define sclPin 32                 // kan behövas ändra på min
@@ -20,21 +22,25 @@
 #define MPU6050_ACCEL_ZOUT_H 0x3F // accelerator z-axel-register
 #define MPU6050_ACCEL_ZOUT_L 0x40 // accelerator z-axel-register
 #define MPU6050_Accel_Lsb 16384.f
+#define samplingPeriod 333   // 3 steg per sec = 1 per 1/3 sec
+#define stepsCalcPeriod 3000 // ca 9 sampels på 3 sec, 9 potetiella steg
 #define taskPeriod 2000
 #define BUFFER_SIZE 10
+
 struct circularBuffer circularBuffer;
 uint32_t accelMag;
-
+uint32_t stepsCounter = 0;
+uint32_t minValue = 0;
 
 void samplingTask(void *arg)
 {
-     TickType_t xLastWakeTime = xTaskGetTickCount();
+    TickType_t xLastWakeTime = xTaskGetTickCount();
 
     while (1)
     {
         int16_t rawData = 0;
         uint8_t buffer;
-   
+
         // read the axcels
         float xAccel, yAccel, zAccel;
         readI2C(MPU6050_ADDR, MPU6050_ACCEL_XOUT_L, &buffer, 1);
@@ -64,9 +70,49 @@ void samplingTask(void *arg)
     }
 }
 
-/*void stepsTask(void *arg)
+void stepsTask(void *arg)
 {
-} */
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+
+    while (1)
+    {
+        float meanValue = 0;
+        uint32_t sd = 0;
+        float sum = 0;
+        int n = 0;
+
+        for (int i = 0; i < circularBuffer.maxLength; i++)
+        {
+            if (circularBuffer.data[i] != minValue)
+                meanValue = meanValue + (float)circularBuffer.data[i];
+            n++;
+        }
+        meanValue = meanValue / n;
+
+        for (int i = 0; i < circularBuffer.maxLength; i++)
+        {
+            if (circularBuffer.data[i] != minValue)
+            {
+                sum = sum + ((float)circularBuffer.data[i] * (float)circularBuffer.data[i] - meanValue * meanValue);
+            }
+        }
+        sum = sum / n;
+        sd = (uint32_t)sqrtf(sum);
+
+        for (int i = 0; i < circularBuffer.maxLength; i++)
+        {
+            if (circularBuffer.data[i] != minValue)
+            {
+                if ((float)circularBuffer.data[i] > ((uint32_t)meanValue + sd))
+                {
+                    stepsCounter++;
+                }
+            }
+        }
+
+        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(taskPeriod));
+    }
+}
 
 void app_main()
 {
@@ -86,7 +132,6 @@ void app_main()
     initCircularBuffer(&circularBuffer, buffer_data, BUFFER_SIZE);
 
     xTaskCreate(samplingTask, "accelerationTask", 2048, NULL, 1, NULL); // kanske ta tillbaka sen
-    // xTaskCreate(stepsTask, "stepsTask", 1024, NULL, 10, NULL);
-   //free(buffer_data);
+    xTaskCreate(stepsTask, "stepsTask", 1024, NULL, 2, NULL);
+    // free(buffer_data);
 }
-
