@@ -12,7 +12,7 @@ void initCircularBuffer(struct circularBuffer *bufferPtr, uint32_t *data, int ma
   bufferPtr->data = data;
   for (int i = 0; i < bufferPtr->maxLength; i++)
   {
-    bufferPtr->data[i] = INT_MIN;
+    bufferPtr->data[i] = UINT32_MAX;
   }
   bufferPtr->head = 0;
   bufferPtr->tail = 0;
@@ -60,7 +60,7 @@ uint32_t addElement(struct circularBuffer *bufferPtr, uint32_t value)
       bufferPtr->filledElements++;
     }
   }
-  return (uint32_t)value;
+  return value;
 }
 
 uint32_t removeHead(struct circularBuffer *bufferPtr)
@@ -68,20 +68,19 @@ uint32_t removeHead(struct circularBuffer *bufferPtr)
   uint32_t value;
   if (bufferPtr->filledElements == 0) //buffern är tom
   {
-    printf("Couldnt remove head, buffer is empty\n");
-    return (uint32_t)INT_MIN;
+    return UINT32_MAX;
   }
   else if (bufferPtr->filledElements == 1) //finns endast 1 element står head och tail på samma
   {
     value = bufferPtr->data[bufferPtr->head];
-    bufferPtr->data[bufferPtr->head] = INT_MIN;
+    bufferPtr->data[bufferPtr->head] = UINT32_MAX;
     bufferPtr->filledElements = bufferPtr->filledElements - 1;
-    return (uint32_t)value;
+    return value;
   }
   else //finns fler element, skall head flyttas till näst äldsta
   {    //element
     value = bufferPtr->data[bufferPtr->head];
-    bufferPtr->data[bufferPtr->head] = INT_MIN;
+    bufferPtr->data[bufferPtr->head] = UINT32_MAX;
 
     if (bufferPtr->head == bufferPtr->maxLength - 1)
     {
@@ -92,9 +91,9 @@ uint32_t removeHead(struct circularBuffer *bufferPtr)
       bufferPtr->head = bufferPtr->head + 1;
     }
     bufferPtr->filledElements = bufferPtr->filledElements - 1;
-    return (uint32_t)value;
+    return value;
   }
 }
-
-
-
+uint8_t isempty(struct circularBuffer *bufferptr){
+  return bufferptr->filledElements==0;
+}
