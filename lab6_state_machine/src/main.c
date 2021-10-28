@@ -16,9 +16,11 @@ int origin = INT_MIN;
 int destination = INT_MIN;
 int readyToGo = 0;
 int differenceInLevels = 0;
-int oldDestiantion = 2;         //first destianation
+int oldDestiantion = 2; // first destianation
 int newOrigen = 2;
-
+void displayLedUp();
+void displayLedMiddle();
+void displayLedDown();
 // Used to not allow button pushes that are too close to each other in time
 static volatile uint64_t lastPush = -PUSH_TIME_US;
 
@@ -206,10 +208,9 @@ void app_main()
 
     // This is where you most likely put your main elevator code.
     while (1)
-    {
+    { 
         if (readyToGo == 0 && list.first != NULL)
         {
-
             readyToGo = 1;
         }
 
@@ -217,7 +218,6 @@ void app_main()
         {
             if (origin != INT_MIN || destination != INT_MIN)
             {
-
                 if (origin != INT_MIN)
                 {
                     level = origin;
@@ -239,8 +239,8 @@ void app_main()
                 origin = current_travel_need.origin;
                 destination = current_travel_need.destination;
                 printf("origin = %d, destination = %d\n ", origin, destination);
-
-                /*differenceInLevels = (oldDestiantion - newOrigen);
+/*
+                differenceInLevels = (oldDestiantion - newOrigen);
                 if (differenceInLevels < 0)
                 {
                     differenceInLevels = -differenceInLevels;
@@ -249,8 +249,7 @@ void app_main()
             }
         }
         if (level == 0)
-        {
-           // vTaskDelay(pdMS_TO_TICKS(5000*differenceInLevels));
+        { 
             gpio_set_level(LED_PIN_LEVEL_UP, 1);
             gpio_set_level(LED_PIN_LEVEL_MIDDLE, 0);
             gpio_set_level(LED_PIN_LEVEL_DOWN, 0);
@@ -260,7 +259,6 @@ void app_main()
 
         else if (level == 1)
         {
-           // vTaskDelay(pdMS_TO_TICKS(5000*differenceInLevels));
             gpio_set_level(LED_PIN_LEVEL_UP, 0);
             gpio_set_level(LED_PIN_LEVEL_MIDDLE, 1);
             gpio_set_level(LED_PIN_LEVEL_DOWN, 0);
@@ -269,13 +267,32 @@ void app_main()
         }
         else if (level == 2)
         {
-            //vTaskDelay(pdMS_TO_TICKS(5000*differenceInLevels));
             gpio_set_level(LED_PIN_LEVEL_UP, 0);
             gpio_set_level(LED_PIN_LEVEL_MIDDLE, 0);
             gpio_set_level(LED_PIN_LEVEL_DOWN, 1);
             vTaskDelay(pdMS_TO_TICKS(5000));
             level = INT_MIN;
         }
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(1000)); 
     }
+}
+void displayLedUp()
+{
+    gpio_set_level(LED_PIN_LEVEL_UP, 1);
+    gpio_set_level(LED_PIN_LEVEL_MIDDLE, 0);
+    gpio_set_level(LED_PIN_LEVEL_DOWN, 0);
+}
+
+void displayLedMiddle()
+{
+    gpio_set_level(LED_PIN_LEVEL_UP, 0);
+    gpio_set_level(LED_PIN_LEVEL_MIDDLE, 1);
+    gpio_set_level(LED_PIN_LEVEL_DOWN, 0);
+}
+
+void displayLedDown()
+{
+    gpio_set_level(LED_PIN_LEVEL_UP, 0);
+    gpio_set_level(LED_PIN_LEVEL_MIDDLE, 0);
+    gpio_set_level(LED_PIN_LEVEL_DOWN, 1);
 }
