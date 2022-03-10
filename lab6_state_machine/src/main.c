@@ -221,7 +221,7 @@ void app_main()
                 if (origin != INT_MIN)
                 {
                     level = origin;
-                    newOrigen = origin;
+                   // newOrigen = origin;
                     origin = INT_MIN;
                 }
                 else if (destination != INT_MIN)
