@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <stdio.h>
+#include <time.h>
+#include <CurieTime.h>
 #define FREQ 1000
 #define heartsensor_input 32
 #define led_output 25
@@ -9,13 +11,13 @@ int threshhold_lower = 2300; //fel eller vad fan?
 int theshholdcounter = 0;
 bool onPeak = false;
 volatile int interrupt_counter;
-unsigned long myTime;
+int actualBeats = 0;
 hw_timer_t *timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 static uint16_t outvalue = 0; //float?
 static float invalue = 0;
-time_t newtime = 0;
-time_t oldtime = 0;
+unsigned long currentTime;
+unsigned long oldTime;
 
 
 void IRAM_ATTR onTime()
@@ -44,20 +46,22 @@ void loop() {
         portENTER_CRITICAL(&timerMux);
         interrupt_counter--;
         portEXIT_CRITICAL(&timerMux);
-        myTime = millis();
 
       outvalue = analogRead(heartsensor_input);
-      Serial.println(outvalue);
+      //Serial.println(outvalue);
 
       if(threshhold_upper < outvalue && onPeak == false){    //HUR SKA DETTA GÖRAS
-      newtime = now
+        currentTime = now();
         digitalWrite(33, HIGH);
         onPeak = true;
-        60/timenow-oldtime;
-        oldtime=timenow;
+        actualBeats = 60/(currentTime-oldTime);
+        Serial.print("Actual beats: ");
+        Serial.println(actualBeats);
+        oldTime = currentTime;
       }
       if(outvalue < threshhold_lower && onPeak == true){
         digitalWrite(33, LOW);
+        onPeak = false;
       }
     }
 
